@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GreedySnake</title>
+  <meta name="keywords" content="testdemo">
+  <meta name="description" content="testdemo。">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="../jquery-1.11.1/jquery.min.js"></script>
+</head>
+<body>
+  <canvas id="snake"></canvas>
+
+  <script type="text/javascript">
+    $(function() {
+      // init global variable
+      var speed = 100;
+      var x = 0;
+      var y = 0;
+      var direction = 'r'; // l = left, r = right, u = up, d = down
+      var path = [];
+      var foodLocation = {};
+
+      var canvasInit = function() {
+        canvasWidth = 600;
+        canvasHeight = 600;
+        $('#snake').attr('width', canvasWidth);
+        $('#snake').attr('height', canvasHeight);
+        $('#snake').css('border', '1px solid #c3c3c3');
+        $('#snake').css('background-color', '#e8e4e4');
+      }
+
+      var snakeInit = function() {
+        snakeLength = 10; // this is the length of blocks-unit
+        snakeSize = 10;
+        o_snake = document.getElementById("snake").getContext("2d");
+        o_snake.strokeStyle = "#fff";
+        o_snake.fillStyle = "#000";
+        foodInit();
+      }
+
+      var foodInit = function() {
+        foodLocation.x = parseInt(Math.random() * (canvasWidth/snakeSize - snakeSize)) * snakeSize;
+        foodLocation.y = parseInt(Math.random() * (canvasHeight/snakeSize - snakeSize)) * snakeSize;
+        o_snake.fillRect(foodLocation.x, foodLocation.y, snakeSize, snakeSize);
+      }
+
+      var snakeMove = function(direction, path, o_snake, snakeSize) {
+          foodCheck();
+          switch (direction) {
+            case 'l' :
+              x = x - snakeSize;
+              break;
+            case 'r' :
+              x = x + snakeSize;
+              break;
+            case 'u' :
+              y = y - snakeSize;
+              break;
+            case 'd' :
+              y = y + snakeSize;
+              break;
+          }
+          // live check must be here, for x&y have been reseted
+          liveCheck();
+          // update snake block
+          path.push({
+            'x': x,
+            'y': y
+          });
+          // clear latest snake block
+          if (path.length > snakeLength) {
+            var r_path = path.shift();
+            o_snake.clearRect(r_path['x'], r_path['y'], snakeSize, snakeSize);
+          }
+          // draw newest snake block
+          o_snake.fillRect(x, y, snakeSize, snakeSize);
+      }
+
+      var snakeGrow = function() {
+        snakeLength ++;
+        foodInit();
+      }
+
+      var liveCheck = function () {
+        if (x > canvasWidth || y > canvasHeight || x < 0 || y < 0) {
+          gameOver();
+        }
+        else if (typeof path[0] !== 'undefined') {
+          for (var i = 0; i < path.length; i++) {
+            console.log(parseInt(path[i].x));
+            console.log(parseInt(foodLocation.x));
+            if (parseInt(path[i].x) == x && parseInt(path[i].y) == y) {
+              gameOver();
+            }
+          }
+        }
+      }
+
+      var foodCheck = function() {
+        for (var i = 0; i < path.length; i++) {
+          if (parseInt(path[i].x) == parseInt(foodLocation.x) && parseInt(path[i].y) == parseInt(foodLocation.y)) {
+            snakeGrow();
+          }
+        }
+      }
+
+      var gameOver = function() {
+        alert('YOU DIED!');
+        window.location.reload();
+        return false;
+      }
+
+      // keyborad map
+      $(document).keydown(function(e) {
+        var keycode = e.keyCode;
+        switch (keycode) {
+          case 37 :
+            direction = 'l';
+            break;
+          case 38 :
+            direction = 'u';
+            break;
+          case 39 :
+            direction = 'r';
+            break;
+          case 40 :
+            direction = 'd';
+            break;
+        }
+        snakeMove(direction, path, o_snake, snakeSize);
+      });
+
+      // events
+      canvasInit();
+      snakeInit();
+      interval = window.setInterval(function() {snakeMove(direction, path, o_snake, snakeSize);}, speed);
+    });
+  </script>
+</body>
+</html>
+
